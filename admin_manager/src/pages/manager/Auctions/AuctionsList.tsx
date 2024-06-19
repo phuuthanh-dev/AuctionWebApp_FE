@@ -1,18 +1,19 @@
-import { Link } from "react-router-dom";
 import { useCallback, useEffect, useState } from "react"; // Thêm useState để quản lý trang hiện tại
-import { Breadcrumb, Dropdown, Spinner } from 'react-bootstrap';
+import {  Spinner, Table } from 'react-bootstrap';
 import { Auction } from "../../../models/Auction";
 import { User } from "../../../models/User";
 import { getAllAuctions } from "../../../api/AuctionAPI";
 import { PaginationControl } from "react-bootstrap-pagination-control";
 import useAccount from "../../../hooks/useAccount";
 import AuctionSingle from "./AuctionSingle";
+import { StateAuction } from "./StateAuction";
+import { Link } from "react-router-dom";
 
 const AuctionsList = () => {
   //
   const token = localStorage.getItem("access_token");
   const user = useAccount(token);
-  const states = ['WAITING', 'ONGOING', 'FINISHED']
+  const states = ['WAITING', 'ONGOING', 'FINISHED', 'PAUSED']
 
   const [listAuctions, setListAuctions] = useState<Auction[]>([]);
   const [page, setPage] = useState(1);
@@ -38,6 +39,7 @@ const AuctionsList = () => {
       setTotalElements(response.totalAuctions);
     } catch (error) {
       console.error(error);
+      setListAuctions([])
     }
     setLoading(false); // Kết thúc tải
   }, [page, auctionState]);
@@ -56,13 +58,13 @@ const AuctionsList = () => {
       <section className="main_content dashboard_part">
         <div className="main_content_iner ">
           <div className="container-fluid plr_30 body_white_bg pt_30">
-            <div className="row justify-content-center" style={{ padding: "50px 0px 0px 100px" }}>
+            <div className="row justify-content-center" style={{ padding: "40px 0px 0px 350px" }}>
               <div className="col-12">
                 <div className="breadcrumb-area">
-                  <Breadcrumb>
-                    <Breadcrumb.Item href="/admin">Trang chủ</Breadcrumb.Item>
-                    <Breadcrumb.Item >Danh sách các phiên đấu giá</Breadcrumb.Item>
-                  </Breadcrumb>
+
+                  <Link to="/manager">Trang chủ  / </Link>
+                  <Link to="/manager/cac-phien-dau-gia">Danh sách các phiên đấu giá</Link>
+
                 </div>
                 <div className="QA_section">
                   <div className="white_box_tittle list_header">
@@ -83,7 +85,7 @@ const AuctionsList = () => {
                         >
                           {states.map((state, index) => (
                             <option style={{ padding: '5px' }} key={index} value={state}>
-                              {state}
+                              {<StateAuction state={state} />}
                             </option>
                           ))}
                         </select>
@@ -91,14 +93,14 @@ const AuctionsList = () => {
                     </div>
                   </div>
                   <div className="">
-                    <table className="table text-center">
+                    <Table striped bordered hover>
                       <thead>
                         <tr>
                           <th scope="col">Mã phiên</th>
-                          <th scope="col">Tên phiên</th>
+                          <th scope="col" style={{ width: '20%' }}>Tên phiên</th>
                           <th scope="col">Thời gian bắt đầu</th>
                           <th scope="col">Thời gian kết thúc</th>
-                          <th scope="col">Nhân viên quản lý</th>
+                          <th scope="col">Mã nhân viên</th>
                           <th scope="col">Trạng thái</th>
                           <th scope="col">Thao tác</th>
                         </tr>
@@ -119,7 +121,7 @@ const AuctionsList = () => {
                           </td>))
                         }
                       </tbody>
-                    </table>
+                    </Table>
                   </div>
                   <PaginationControl
                     page={page}

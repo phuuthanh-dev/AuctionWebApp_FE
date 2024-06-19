@@ -15,7 +15,7 @@ import changeStateRequest, {
 } from "../../../api/RequestApprovalAPI";
 import { toast } from "react-toastify";
 import "./Modal.css";
-import { formatDateString } from "../../../utils/formatDateString";
+import { formatDateString, formatDateStringAcceptNull } from "../../../utils/formatDateString";
 import { Auction } from "../../../models/Auction";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
@@ -24,6 +24,8 @@ import { PaginationControl } from "react-bootstrap-pagination-control";
 import { createNewAuctionFromManager } from "../../../api/AuctionAPI";
 import PARTICIPATION_FEE from "../../../global_variable/variable";
 import { descriptionAuction } from "../../../utils/descriptionAuction";
+import { changeStateTransaction } from "../../../api/TransactionAPI";
+import { Transaction } from "../../../models/Transaction";
 
 // *** MODAL FOR MANAGER ***
 // Modal for Jewelry List
@@ -95,7 +97,7 @@ export const JewelryModal: React.FC<JewelryModalProps> = ({
                 </div>
                 <h5 className="col-12">
                   Nhân viên gửi yêu cầu -{" "}
-                  <span className=" fw-bold">{request.sender?.firstName}</span>
+                  <span className=" fw-bold">{request.sender?.fullName}</span>
                 </h5>
                 <h5 className="col-12">
                   Mã nhân viên -{" "}
@@ -113,7 +115,7 @@ export const JewelryModal: React.FC<JewelryModalProps> = ({
                     <div className="col-md-12 fw-medium">
                       <div className="checkout-form-list mb-2 row">
                         <div className="col-md-6">
-                          <label>Chủ tài sản:</label>
+                          <span>Chủ tài sản:</span>
                           <span className="fw-bold">
                             {" "}
                             {jewelry?.user?.fullName}
@@ -358,7 +360,7 @@ export const DeleteJewelryRequestModal: React.FC<DeleteJewelryModalProps> = ({
   );
 };
 
-// Manage Auctions Modal
+// *** MANAGE AUCTION 
 
 type AuctionType = {
   auction: Auction;
@@ -561,15 +563,6 @@ interface NewAuctionRequestProps {
   jewelryId: number;
   staffId: number;
 }
-interface DescriptionAuctionProps {
-  jewelry: string;
-  participationFee: number;
-  firstPrice: number;
-  deposit: number;
-  priceStep: number;
-  startDate: string;
-  endDate: string;
-}
 export const CreateNewAuctionModal: React.FC<CreateNewAuctionModalProps> = ({
   request,
   jewelry,
@@ -666,7 +659,6 @@ export const CreateNewAuctionModal: React.FC<CreateNewAuctionModalProps> = ({
     } else {
       setShow(false); // Close the JewelryModal
       setShowContinueModal(true); // Open the JewelryCreateRequestModal
-      console.log(newAuctionRequest);
     }
   };
 
@@ -709,7 +701,7 @@ export const CreateNewAuctionModal: React.FC<CreateNewAuctionModalProps> = ({
             onHide={handleCloseCreateAuction}
             centered
             backdrop="static"
-            size="lg"
+            size="xl"
           >
             <Modal.Header>
               <Modal.Title className="w-100">
@@ -901,7 +893,7 @@ export const CreateNewAuctionModal: React.FC<CreateNewAuctionModalProps> = ({
                     <label style={{ marginBottom: "5px" }} htmlFor="txtStart">
                       Mô tả cho phiên:
                     </label>
-                    <div>
+                    <div style={{ height: '400px' }}>
                       <CKEditor
                         editor={ClassicEditor}
                         data={description}
@@ -918,13 +910,12 @@ export const CreateNewAuctionModal: React.FC<CreateNewAuctionModalProps> = ({
                           editor.editing.view.change((writer) => {
                             const root = editor.editing.view.document.getRoot();
                             if (root) {
-                              writer.setStyle("height", "200px", root);
+                              writer.setStyle("height", "300px", root);
                             }
                           });
                         }}
                         onChange={(event, editor) => {
                           const data = editor.getData();
-                          console.log(data);
                           updateDescription(data);
                         }}
                       />
@@ -1146,6 +1137,217 @@ export const SelectStaffForAucionModal: React.FC<SelectStaffForAucionModal> = ({
               </Button>
               <Button variant="warning" onClick={completeCreateAuction}>
                 Hoàn tất
+              </Button>
+            </Modal.Footer>
+          </Modal>
+        </div>
+      )}
+    </>
+  );
+};
+
+// *** MAGAGE TRANSACTIONS
+type TransacationModalProps = {
+  transaction: Transaction;
+};
+export const ViewTransactionModal: React.FC<TransacationModalProps> = ({ transaction }) => {
+  const payer = transaction.user;
+
+  const [show, setShow] = useState(false);
+
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
+
+  return (
+    <>
+      <Button variant="dark" size="sm" onClick={handleShow} >
+        Xem
+      </Button>
+      {show && (
+        <div className='overlay' >
+          <Modal
+            show={show}
+            onHide={handleClose}
+            centered
+            backdropClassName="custom-backdrop"
+            size="lg"
+          >
+            <Modal.Header >
+              <Modal.Title className='w-100'>
+
+                <div className='col-12 text-center'>Thông tin chi tiết giao dịch</div>
+              </Modal.Title>
+            </Modal.Header>
+            <Modal.Body className='p-3'>
+              <form action="">
+                <div className="checkbox-form">
+                  <div className="fw-medium row">
+                    <h4 className=' fw-medium text-decoration-underline'>Tài khoản giao dịch</h4>
+                    <div className="checkout-form-list my-4 col-md-6">
+                      <div className='checkout-form-list mb-2'>
+                        <span>
+                          Mã người dùng:{" "}
+                        </span>
+                        <span className='fw-bold'> {payer?.id}</span>
+
+                      </div>
+                      <div className="checkout-form-list mb-2 ">
+                        <span>
+                          Tên người dùng:
+                        </span>
+                        <span className='fw-bold'> {payer?.firstName} {payer?.lastName}</span>
+                      </div>
+                      <div className="checkout-form-list mb-2 ">
+                        <span>
+                          Số CCCD:
+                        </span>
+                        <span className='fw-bold'> {payer?.cccd}</span>
+                      </div>
+                      <div className="checkout-form-list mb-2">
+                        <span>
+                          Địa chỉ:
+                        </span>
+                        <span className='fw-semibold'> {payer?.address}, {payer?.city}, {payer?.district} </span>
+                      </div>
+                      <div className="checkout-form-list mb-2">
+                        <span>Email:  </span>
+                        <span className='fw-semibold'> {payer?.email}</span>
+                      </div>
+                    </div>
+                    <div className="checkout-form-list ms-2 mb-2 col-md-6 border p-2 row">
+                      <div className="checkout-form-list mb-0 col-md-6">
+                        <img src={payer?.bank?.logo} alt="bank" />
+                      </div>
+                      <div className='checkout-form-list mb-2 col-md-12'>
+                        <span>
+                          Thẻ ngân hàng:{" "}
+                        </span>
+                        <span className='fw-bold text-uppercase'> {payer?.bank?.bankName}</span>
+                      </div>
+                      <div className="checkout-form-list mb-2 col-md-12 ">
+                        <span>
+                          Mã số thẻ:
+                        </span>
+                        <span className='fw-bold text-success'> {payer?.bankAccountName} - {payer?.bankAccountNumber}</span>
+                      </div>
+
+                    </div>
+                    <div className="checkout-form-list my-4 col-md-12 p-2 row">
+                      <h4 className=' fw-medium text-decoration-underline'>Thông tin giao dịch</h4>
+
+                      <div className="checkout-form-list my-4 col-md-6">
+                        <div className='checkout-form-list mb-2'>
+                          <span>
+                            Loại giao dịch:{" "}
+                          </span>
+                          <span className='fw-bold'> <TypeTransaction type={transaction.type} /></span>
+
+                        </div>
+                        <div className='checkout-form-list mb-2'>
+                          <span>
+                            Phiên đấu giá:{" "}
+                          </span>
+                          <span className='fw-bold'> {transaction.auction?.id} - {transaction.auction?.name}</span>
+
+                        </div>
+                        <div className="checkout-form-list mb-2 ">
+                          <span>
+                            Phương thức thanh toán:
+                          </span>
+                          <span className='fw-bold'> <PaymentMethod method={transaction.paymentMethod} /></span>
+                        </div>
+                      </div>
+                      <div className="checkout-form-list my-4 col-md-6">
+                        <div className='checkout-form-list mb-2'>
+                          <span>
+                            Thời gian khởi tạo:{" "}
+                          </span>
+                          <span className='fw-bold'> {formatDateStringAcceptNull(transaction.createDate)}</span>
+
+                        </div>
+                        <div className="checkout-form-list mb-2 ">
+                          <span>
+                            Thời gian thanh toán:
+                          </span>
+                          <span className='fw-bold'> {formatDateStringAcceptNull(transaction.paymentTime)}</span>
+                        </div>
+                      </div>
+                      <div className='checkout-form-list mb-2 col-md-12'>
+                        <span>
+                          Tổng số tiền:{" "}
+                        </span>
+                        <span className='fw-bold text-uppercase fs-4 text-success'>    {formatNumberAcceptNull(transaction.totalPrice)} VND</span>
+                      </div>
+                      <div className='mt-3'>
+                        <span style={{ fontSize: '12px' }}>(*)Mọi thắc mắc xin liên hệ hotline (+84) 0123456789 để được hỗ trợ.</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="dark" onClick={handleClose}>
+                Đóng
+              </Button>
+            </Modal.Footer>
+          </Modal>
+        </div>
+      )}
+
+    </>
+  );
+}
+// Delete Transaction Modal
+interface DeleteTransactionModalProps {
+  transaction: Transaction;
+}
+
+export const DeleteTransactionModal: React.FC<DeleteTransactionModalProps> = ({ transaction }) => {
+  const [show, setShow] = useState(false);
+
+  const handleClose = () => {
+    setShow(false);
+  };
+  const handleShow = () => setShow(true);
+  const handleDelete = async () => {
+    changeStateTransaction(transaction.id, 'HIDDEN')
+    handleClose()
+  };
+
+
+  return (
+    <>
+      <button
+        type="button"
+        className="btn btn-sm btn-danger ms-2 "
+        id="save-profile-tab"
+        role="tab"
+        aria-controls="account-details"
+        aria-selected="false"
+        onClick={handleShow}
+
+      >
+        Xóa
+      </button>
+      {show && (
+        <div className='overlay'>
+          <Modal show={show} onHide={handleClose} centered backdropClassName="custom-backdrop">
+            <Modal.Header className='text-center w-100'>
+              <Modal.Title className='w-100'>
+                <div className='col-12 text-center'>Xác nhận xóa giao dịch</div>
+                <div className='col-12 mb-3 text-center '><span className='text-danger fw-bold'>{transaction.id}</span></div>
+              </Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <h5 className='fw-semibold'>Bạn có chắc muốn xóa giao dịch này khỏi danh sách không?</h5>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="dark" onClick={handleClose}>
+                Hủy
+              </Button>
+              <Button variant="danger" onClick={handleDelete}>
+                Xác nhận
               </Button>
             </Modal.Footer>
           </Modal>

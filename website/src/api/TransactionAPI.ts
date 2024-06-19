@@ -1,6 +1,7 @@
 import BASE_URL from "../config/config";
 import { Transaction } from "../models/Transaction";
 import { User } from "../models/User";
+import { fetchNoBodyWithToken } from "./AuthenticationAPI";
 import { MyRequest } from "./MyRequest";
 
 interface ResultInteface {
@@ -20,7 +21,6 @@ export const getTransactionsDashboardByUsername = async (username: string): Prom
     const URL = `${BASE_URL}/transaction/get-by-user-name/${username}`;
     // call api
     const response = await MyRequest(URL);
-    console.log(response)
     return {
         numberTransactionsRequest: response.numberTransactionsRequest,
         totalPriceJewelryWonByUsername: response.totalPriceJewelryWonByUsername,
@@ -83,6 +83,28 @@ export const createTransactionForWinner = async (auctionId: number): Promise<Use
     }
 };
 
+export const createTransactionForWinnerIfNotExist = async (userId: number): Promise<Transaction[]> => {
+    // end-point
+    const URL = `${BASE_URL}/transaction/create-transaction-for-winner-if-not-exist/${userId}`;
+    try {
+        // call api
+        const response = await fetch(URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to create transaction');
+        }
+        const createdTransactions: Transaction[] = await response.json();
+        return createdTransactions;
+    } catch (error) {
+        throw error;
+    }
+};
+
 export async function getTransactionsByTypeAndState(type: string, state: string, page: number): Promise<ResultInteface> {
     const transactions: Transaction[] = [];
     // end-point
@@ -112,4 +134,55 @@ export async function getTransactionsByTypeAndState(type: string, state: string,
         transactions: transactions,
         totalElements: response.totalElements
     };
+}
+
+export async function getHandoverTransaction(type: string, page: number): Promise<ResultInteface> {
+    const transactions: Transaction[] = [];
+    // end-point
+    const URL = `${BASE_URL}/transaction/get-handover?type=${type}&page=${page - 1}`;
+    // call api
+    const response = await MyRequest(URL);
+    const responseData = response.content;
+    if (response) {
+        for (const item of responseData) {
+            transactions.push({
+                id: item.id,
+                createDate: item.createDate,
+                paymentTime: item.paymentTime,
+                totalPrice: item.totalPrice,
+                feesIncurred: item.feesIncurred,
+                state: item.state,
+                type: item.type,
+                auction: item.auction,
+                paymentMethod: item.paymentMethod,
+                user: item.user
+            });
+        }
+    } else {
+        throw new Error("Transaction không tồn tại");
+    }
+    return {
+        transactions: transactions,
+        totalElements: response.totalElements
+    };
+}
+
+export async function setMethodTransaction(transactionId: number, method: string): Promise<boolean> {
+    const accessToken = localStorage.getItem('access_token');
+    // endpoint
+    const URL = `${BASE_URL}/transaction/set-method/${transactionId}?method=${method}`;
+    // call api
+    try {
+        const response = await fetchNoBodyWithToken(URL, 'PUT', accessToken);
+
+        console.log(response);
+
+        if (!response.ok) {
+            throw new Error(`Không thể truy cập ${URL}`);
+        }
+        return true;
+    } catch (error) {
+        console.error("Error: " + error);
+        return false;
+    }
 }

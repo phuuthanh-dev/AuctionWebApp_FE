@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Button, Breadcrumb, Spinner } from 'react-bootstrap';
+import { Modal, Button, Spinner, Table } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { getMembers } from '../../../api/UserAPI';
 import { User } from '../../../models/User';
 import { UserStateView } from './UserStateView';
 import { PaginationControl } from 'react-bootstrap-pagination-control';
 
+
 const ManageManager = () => {
   const [showModal, setShowModal] = useState(false);
-  const [searchInput, setSearchInput] = useState('');
   const [managers, setManagers] = useState<User[]>([]);
   const [page, setPage] = useState(1);
   const [totalElements, setTotalElements] = useState(0);
@@ -33,57 +33,25 @@ const ManageManager = () => {
   };
 
   const handleDeleteManager = () => {
-    // You would typically implement the delete logic here
     console.log('Xóa quản lý');
     handleCloseModal();
-  };
-
-  const handleSearchInput = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchInput(event.target.value);
-  };
-
-  const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    // Implement search logic here
-    console.log('Search:', searchInput);
   };
 
   return (
     <>
       <section className="main_content dashboard_part">
-        <div className="main_content_iner mb-0">
+        <div className="main_content_iner">
           <div className="container-fluid plr_30 body_white_bg pt_30">
-            <div className="row justify-content-center" style={{ padding: "50px 0px 0px 100px" }}>
+            <div className="row justify-content-center" style={{ padding: "40px 0px 0px 350px" }}>
               <div className="col-12">
-                {/* Breadcrumb Area */}
-                <div className="breadcrumb-area">
-                  <Breadcrumb>
-                    <Breadcrumb.Item href="/admin">Trang chủ</Breadcrumb.Item>
-                    <Breadcrumb.Item>Quản lý tài khoản</Breadcrumb.Item>
-                    <Breadcrumb.Item href="/admin/account/user">Quản lý</Breadcrumb.Item>
-                  </Breadcrumb>
+                <div className="breadcrumb-area mb-4">
+                  <Link to="/admin">Trang chủ {'  /  '} </Link>
+                  <Link to="/admin/danh-sach-quan-ly"> Danh sách quản lý  </Link>
                 </div>
                 <div className="QA_section">
                   <div className="white_box_tittle list_header">
                     <h4>Danh sách quản lý</h4>
                     <div className="box_right d-flex lms_block">
-                      <div className="serach_field_2">
-                        <div className="search_inner">
-                          <form onSubmit={handleSearchSubmit}>
-                            <div className="search_field">
-                              <input
-                                type="text"
-                                placeholder="Tìm kiếm..."
-                                value={searchInput}
-                                onChange={handleSearchInput}
-                              />
-                            </div>
-                            <button type="submit">
-                              <i className="ti-search"></i>
-                            </button>
-                          </form>
-                        </div>
-                      </div>
                       <div className="add_button ms-2">
                         <a href="#" data-bs-toggle="modal" data-bs-target="#addcategory" className="btn_1">
                           Thêm tài khoản mới
@@ -91,8 +59,8 @@ const ManageManager = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="QA_table">
-                    <table className="table lms_table_active">
+                  <div >
+                    <Table striped bordered hover>
                       <thead>
                         <tr>
                           <th scope="col">ID</th>
@@ -118,9 +86,9 @@ const ManageManager = () => {
                         ) : (
                           managers.map((user) => (
                             <tr key={user.id}>
-                              <th scope="row">
-                                <a href="#" className="question_content">{user.id}</a>
-                              </th>
+                              <td>
+                                {user.id}
+                              </td>
                               <td>{user.username}</td>
                               <td>{user.fullName}</td>
                               <td>{user.email}</td>
@@ -132,7 +100,7 @@ const ManageManager = () => {
                               </td>
                               <td>
                                 <div className="btn-group">
-                                  <Link to={`/admin/chi-tiet-nguoi-dung/${user.id}`} className="btn btn-sm btn-warning">Xem</Link>
+                                  <Link to={`/admin/chi-tiet-nguoi-dung/${user.id}`} className="btn btn-sm btn-dark">Xem</Link>
                                   <Button variant="danger" size="sm" onClick={handleShowModal}>Xóa</Button>
                                 </div>
                               </td>
@@ -140,7 +108,15 @@ const ManageManager = () => {
                           ))
                         )}
                       </tbody>
-                    </table>
+                    </Table>
+                    <PaginationControl
+                      page={page}
+                      between={3}
+                      total={totalElements}
+                      limit={5}
+                      changePage={(page) => setPage(page)}
+                      ellipsis={1}
+                    />
                   </div>
                   <Modal show={showModal} onHide={handleCloseModal}>
                     <Modal.Header closeButton>
@@ -161,14 +137,7 @@ const ManageManager = () => {
             </div>
           </div>
         </div>
-        <PaginationControl
-          page={page}
-          between={3}
-          total={totalElements}
-          limit={5}
-          changePage={(page) => setPage(page)}
-          ellipsis={1}
-        />
+
       </section>
     </>
   );

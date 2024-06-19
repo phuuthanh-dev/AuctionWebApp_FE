@@ -1,5 +1,5 @@
 
-import { fetchGetWithToken } from "./AuthenticationAPI";
+import { fetchGetWithToken, fetchWithToken } from "./AuthenticationAPI";
 import { MyRequest } from "../../../website/src/api/MyRequest";
 import { User } from "../models/User";
 import BASE_URL from "../global_variable/config";
@@ -108,5 +108,55 @@ export async function getMembers(role: string, page: number): Promise<ResultPage
     };
 }
 
+export const editProfileUser = async (user: User): Promise<User> => {
+    const URL = `${BASE_URL}/user`;
+
+    // await ensureAccessToken();
+    const token = localStorage.getItem("access_token");
+    const response = await fetchWithToken(URL, 'PUT', token, user);
+    if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+    }
+    return user;
+};
+
+export async function getTopSpentUser() {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+        throw new Error("No access token found");
+    }
+
+    const URL = `${BASE_URL}/user/get-top-spent-user`;
+
+    const response = await fetchGetWithToken(URL, 'GET', token)
+
+    if (!response.ok) {
+        throw new Error(`Cannot access ${URL}`);
+    }
+
+    const data = await response.json();
+
+    const users: User[] = data.map((item: { user: User, totalSpent: number }) => ({
+        id: item.user.id,
+        username: item.user.username,
+        firstName: item.user.firstName,
+        lastName: item.user.lastName,
+        email: item.user.email,
+        fullName: item.user.fullName,
+        phone: item.user.phone,
+        address: item.user.address,
+        district: item.user.district,
+        ward: item.user.ward,
+        city: item.user.city,
+        yob: item.user.yob,
+        cccd: item.user.cccd,
+        state: item.user.state,
+        avatar: item.user.avatar,
+        bankAccountNumber: item.user.bankAccountNumber,
+        bankAccountName: item.user.bankAccountName,
+        totalSpent: item.totalSpent,
+    }));
 
 
+    return users;
+}

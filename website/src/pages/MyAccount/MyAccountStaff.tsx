@@ -9,12 +9,16 @@ import JewelriesHandOverList from "./Components/staff/JewelriesHandOverList";
 import { LogoutModal } from "./Modal/Modal";
 import { ChangePassword } from "./Components/staff/ChangePassword";
 import StaffRequestList from "./Components/staff/StaffRequestList";
+import { useTranslation } from "react-i18next";
+import JewelrySentToWebList from "./Components/staff/JewelrySentToWebList";
 export default function MyAccountStaff() {
   const token = localStorage.getItem("access_token");
   const { account, setAccount } = useAccount(token);
 
   const [userState, setUserState] = useState<User | null>(account);
-  const [listNumber, setListNumber] = useState<number>(0)
+  const [listNumber, setListNumber] = useState<number>(0);
+
+  const { t } = useTranslation(["MyAccountStaff"]);
 
   useEffect(() => {
     setUserState(account);
@@ -28,7 +32,7 @@ export default function MyAccountStaff() {
               <li>
                 <Link to={"/"}>Home</Link>
               </li>
-              <li className="active">Tài khoản của tôi</li>
+              <li className="active">{t("MyAccount.ThongTinTaiKhoan")}</li>
             </ul>
           </div>
         </div>
@@ -54,7 +58,7 @@ export default function MyAccountStaff() {
                       aria-controls="account-dashboard"
                       aria-selected="true"
                     >
-                      Thông tin tài khoản
+                      {t("MyAccount.ThongTinTaiKhoan")}
                     </a>
                   </li>
                   <li className="nav-item">
@@ -67,10 +71,15 @@ export default function MyAccountStaff() {
                       aria-controls="account-dashboard"
                       aria-selected="true"
                     >
-                      Đổi mật khẩu
+                      {t("MyAccount.DoiMatKhau")}
                     </a>
                   </li>
-                  <li className="nav-item" onClick={() => { setListNumber(3) }}>
+                  <li
+                    className="nav-item"
+                    onClick={() => {
+                      setListNumber(3);
+                    }}
+                  >
                     <a
                       className="nav-link"
                       id="account-orders-tab"
@@ -80,10 +89,15 @@ export default function MyAccountStaff() {
                       aria-controls="account-orders"
                       aria-selected="false"
                     >
-                      Danh sách trang sức được gửi tới
+                      {t("MyAccount.ListCacYeuCauGuiToi")}
                     </a>
                   </li>
-                  <li className="nav-item" onClick={() => { setListNumber(4) }}>
+                  <li
+                    className="nav-item"
+                    onClick={() => {
+                      setListNumber(4);
+                    }}
+                  >
                     <a
                       className="nav-link"
                       id="account-details-tab"
@@ -93,7 +107,25 @@ export default function MyAccountStaff() {
                       aria-controls="account-details"
                       aria-selected="false"
                     >
-                      Danh sách các yêu cầu gửi đi
+                      {t("MyAccount.ListCacYeuCauGuiDi")}
+                    </a>
+                  </li>
+                  <li
+                    className="nav-item"
+                    onClick={() => {
+                      setListNumber(4);
+                    }}
+                  >
+                    <a
+                      className="nav-link"
+                      id="account-details-tab"
+                      data-bs-toggle="tab"
+                      href="#jewelry-sent"
+                      role="tab"
+                      aria-controls="account-details"
+                      aria-selected="false"
+                    >
+                      {t("MyAccount.ListCacTrangSucGuiToi")}
                     </a>
                   </li>
                   <li className="nav-item">
@@ -106,7 +138,7 @@ export default function MyAccountStaff() {
                       aria-controls="account-address"
                       aria-selected="false"
                     >
-                      Danh sách trang sức bàn giao
+                      {t("MyAccount.ListTrangSucBanGiao")}
                     </a>
                   </li>
                   <li className="nav-item">
@@ -119,7 +151,7 @@ export default function MyAccountStaff() {
                       aria-controls="account-details"
                       aria-selected="false"
                     >
-                      Các phiên đấu giá được phân công
+                      {t("MyAccount.CacPhienDuocPhanCong")}
                     </a>
                   </li>
                   <li className="nav-item">
@@ -134,17 +166,33 @@ export default function MyAccountStaff() {
                   className="tab-content myaccount-tab-content "
                   id="account-page-tab-content"
                 >
-                  <MyAccountDetail isAfterPay={false} user={userState} setUser={setUserState} />
+                  <MyAccountDetail
+                    isAfterPay={false}
+                    user={userState}
+                    setUser={setUserState}
+                  />
 
                   <ChangePassword user={userState} />
 
-                  <JewelriesWaitList user={userState} setUser={setUserState} listNumber={listNumber} />
+                  <JewelriesWaitList
+                    user={userState}
+                    setUser={setUserState}
+                    listNumber={listNumber}
+                  />
                   <JewelriesHandOverList
                     user={userState}
                     setUser={setUserState}
                   />
 
-                  <StaffRequestList userId={userState?.id} listNumber={listNumber} />
+                  <StaffRequestList
+                    userId={userState?.id}
+                    listNumber={listNumber}
+                  />
+
+                  <JewelrySentToWebList
+                    userId={userState?.id}
+                    listNumber={listNumber}
+                  />
 
                   <AssignedAuctionList
                     user={userState}
@@ -155,7 +203,6 @@ export default function MyAccountStaff() {
               {/* <ToastContainer /> */}
             </div>
           </div>
-
         </div>
       </main>
     </>
