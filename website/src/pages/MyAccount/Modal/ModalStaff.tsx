@@ -24,12 +24,13 @@ import changeStateRequest, {
 import { StateAuctionView } from "../../AuctionList/Components/StateAuctionView";
 import { PaymentMethod } from "../Components/member/PaymentMethod";
 import { StateTransaction } from "../Components/member/StateTransaction";
-import { setJewelryHolding } from "../../../api/JewelryAPI";
+import { setJewelryStateWithHolding } from "../../../api/JewelryAPI";
 import PDFHandover from "../../../utils/PDFForm/PDFHandoverAsset";
 import { useTranslation } from "react-i18next";
 import { PDFViewer } from "@react-pdf/renderer";
 import PDFReturnAsset from "../../../utils/PDFForm/PDFReturnAsset";
 import Swal from "sweetalert2/dist/sweetalert2.js";
+import { JewelryMaterialView } from "../Components/member/JewelryMaterialView";
 
 // *** MODEL FOR STAFF
 // Interface
@@ -208,7 +209,7 @@ export const ViewStaffRequestModal: React.FC<MyRequestProps> = ({
                           <label>{t("ModalStaff.Chất liệu")}</label>
                           <span className="fw-bold">
                             {" "}
-                            {t(`ModalStaff.${request.jewelry?.material}`)}
+                            <JewelryMaterialView material={request.jewelry?.material ?? ""} />
                           </span>
                         </div>
                         <div className="col-md-6">
@@ -445,7 +446,7 @@ export const JewelryModal: React.FC<JewelryModalProps> = ({
                           <label>{t("ModalStaff.Chất liệu")}</label>
                           <span className="fw-bold">
                             {" "}
-                            {t(`ModalStaff.${jewelry?.material}`)}
+                            <JewelryMaterialView material={jewelry?.material ?? ""} />
                           </span>
                         </div>
                         <div className="col-md-6">
@@ -637,102 +638,102 @@ export const JewelryCreateRequestModal: React.FC<JewelryCreateRequestModalProps>
                         />
                       </div>
                     </div>
-                  </div>
-                  <div className="col-md-6 fw-medium">
-                    <div className="checkout-form-list">
-                      <label>{t("ModalStaff.Danh mục")}</label>
-                      <input
-                        placeholder=""
-                        type="text"
-                        value={jewelry?.category?.name}
-                        readOnly={true}
-                      />
+                    <div className="col-md-6 fw-medium">
+                      <div className="checkout-form-list">
+                        <label>{t("ModalStaff.Danh mục")}</label>
+                        <input
+                          placeholder=""
+                          type="text"
+                          value={jewelry?.category?.name}
+                          readOnly={true}
+                        />
+                      </div>
                     </div>
-                  </div>
-                  <div className="col-md-4 fw-medium">
-                    <div className="checkout-form-list">
-                      <label>{t("ModalStaff.Chất liệu")}</label>
-                      <input
-                        placeholder=""
-                        type="text"
-                        value={t(`ModalStaff.${jewelry?.material}`)}
-                        readOnly={true}
-                      />
+                    <div className="col-md-4 fw-medium">
+                      <div className="checkout-form-list">
+                        <label>{t("ModalStaff.Chất liệu")}</label>
+                        <input
+                          placeholder=""
+                          type="text"
+                          value={t(`ModalStaff.${jewelry?.material}`)}
+                          readOnly={true}
+                        />
+                      </div>
                     </div>
-                  </div>
-                  <div className="col-md-4 fw-medium">
-                    <div className="checkout-form-list">
-                      <label>{t("ModalStaff.Thương hiệu")}</label>
-                      <input
-                        placeholder="Street address"
-                        type="text"
-                        value={jewelry?.brand}
-                        readOnly={true}
-                      />
+                    <div className="col-md-4 fw-medium">
+                      <div className="checkout-form-list">
+                        <label>{t("ModalStaff.Thương hiệu")}</label>
+                        <input
+                          placeholder="Street address"
+                          type="text"
+                          value={jewelry?.brand}
+                          readOnly={true}
+                        />
+                      </div>
                     </div>
-                  </div>
-                  <div className="col-md-4 fw-medium">
-                    <div className="checkout-form-list">
-                      <label>{t("ModalStaff.Trọng lượng (g)")}</label>
-                      <input
-                        placeholder="Street address"
-                        type="text"
-                        value={jewelry?.weight}
-                        readOnly={true}
-                      />
+                    <div className="col-md-4 fw-medium">
+                      <div className="checkout-form-list">
+                        <label>{t("ModalStaff.Trọng lượng (g)")}</label>
+                        <input
+                          placeholder="Street address"
+                          type="text"
+                          value={jewelry?.weight}
+                          readOnly={true}
+                        />
+                      </div>
                     </div>
-                  </div>
-                  <div className="order-notes fw-medium">
-                    <div className="checkout-form-list checkout-form-list-2">
-                      <label>{t("ModalStaff.Mô tả")} </label>
-                      <textarea
-                        readOnly
-                        id="checkout-mess"
-                        value={jewelry?.description}
-                      ></textarea>
+                    <div className="order-notes fw-medium">
+                      <div className="checkout-form-list checkout-form-list-2">
+                        <label>{t("ModalStaff.Mô tả")} </label>
+                        <textarea
+                          readOnly
+                          id="checkout-mess"
+                          value={jewelry?.description}
+                        ></textarea>
+                      </div>
                     </div>
-                  </div>
-                  <div className="order-notes col-md-12 fw-medium">
-                    <div className="checkout-form-list checkout-form-list-2 row">
-                      <label>{t("ModalStaff.Hình ảnh tài sản")} </label>
-                      {React.Children.toArray(
-                        images.map((img: Image) => (
-                          <div className="col-md-3">
-                            <img
-                              src={img.data}
-                              alt={t("ModalStaff.Ảnh tài sản")}
-                            />
-                          </div>
-                        ))
-                      )}
+                    <div className="order-notes col-md-12 fw-medium">
+                      <div className="checkout-form-list checkout-form-list-2 row">
+                        <label>{t("ModalStaff.Hình ảnh tài sản")} </label>
+                        {React.Children.toArray(
+                          images.map((img: Image) => (
+                            <div className="col-md-3">
+                              <img
+                                src={img.data}
+                                alt={t("ModalStaff.Ảnh tài sản")}
+                              />
+                            </div>
+                          ))
+                        )}
+                      </div>
                     </div>
-                  </div>
-                  <div className="col-md-6">
-                    <div className="checkout-form-list">
-                      <label className="text-danger fw-bold">
-                        {t("ModalStaff.Giá đề xuất")}
-                      </label>
-                      <input
-                        className=" fw-bold"
-                        placeholder=""
-                        type="text"
-                        value={formatNumber(request.desiredPrice)}
-                        readOnly={true}
-                      />
+                    <div className="col-md-6">
+                      <div className="checkout-form-list">
+                        <label className="text-danger fw-bold">
+                          {t("ModalStaff.Giá mong muốn")}
+                        </label>
+                        <input
+                          className=" fw-bold"
+                          placeholder=""
+                          type="text"
+                          value={formatNumber(request.desiredPrice)}
+                          readOnly={true}
+                        />
+                      </div>
                     </div>
-                  </div>
-                  <div className="col-md-6">
-                    <div className="checkout-form-list">
-                      <label className="text-success fw-bold">
-                        {t("ModalStaff.Định giá")}
-                      </label>
-                      <input
-                        className=" fw-bold"
-                        placeholder=""
-                        type="text"
-                        value={formatNumber(request.valuation)}
-                        readOnly={true}
-                      />
+                    <div className="col-md-6">
+                      <div className="checkout-form-list">
+                        <label className="text-success fw-bold">
+                          {t("ModalStaff.Định giá")}
+                        </label>
+                        <input
+                          className=" fw-bold"
+                          placeholder=""
+                          type="text"
+                          value={formatNumber(request.valuation)}
+                          readOnly={true}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1142,7 +1143,7 @@ export const JewelryHanOverModal: React.FC<JewelryHanOverModalProps> = ({
                           <label>{t("ModalStaff.Chất liệu")}</label>
                           <span className="fw-bold">
                             {" "}
-                            {t(`ModalStaff.${jewelry?.material}`)}
+                            <JewelryMaterialView material={jewelry?.material ?? ""} />
                           </span>
                         </div>
                         <div className="col-md-6">
@@ -1334,7 +1335,7 @@ export const CreateHandoverReportModal: React.FC<CreateHandoverReportModalProps>
 }) => {
   const jewelryId = jewelry?.id ? jewelry.id : 1;
   const handleConfirm = async () => {
-    const confirm = await setJewelryHolding(jewelryId, false);
+    const confirm = await setJewelryStateWithHolding(jewelryId, false, 'HANDED_OVER');
     if (confirm) {
       Swal.fire({
         position: "center",
@@ -1477,7 +1478,7 @@ export const JewelryReturnedModal: React.FC<JewelryReturnedModalProps> = ({
                           <label>{t("ModalStaff.Chất liệu")}</label>
                           <span className="fw-bold">
                             {" "}
-                            {t(`ModalStaff.${jewelry?.material}`)}
+                            <JewelryMaterialView material={jewelry?.material ?? ""} />
                           </span>
                         </div>
                         <div className="col-md-6">
@@ -1605,7 +1606,7 @@ export const CreateReturnReportModal: React.FC<CreateReturnReportModalProps> = (
 }) => {
   const jewelryId = jewelry?.id ? jewelry.id : 1;
   const handleConfirm = async () => {
-    const confirm = await setJewelryHolding(jewelryId, false);
+    const confirm = await setJewelryStateWithHolding(jewelryId, false, 'RETURNED');
     if (confirm) {
       Swal.fire({
         position: "center",
@@ -1692,7 +1693,7 @@ export const ConfirmHoldingModal: React.FC<ConfirmHoldingModalProps> = ({
   const handleShowJewelryDetail = () => setShow(true);
 
   const handleConfirm = async () => {
-    const confirm = await setJewelryHolding(jewelry.id, true);
+    const confirm = await setJewelryStateWithHolding(jewelry.id, true, 'ACTIVE');
     if (confirm) {
       Swal.fire({
         position: "center",
