@@ -32,7 +32,7 @@ export const getTransactionsDashboardByUsername = async (username: string): Prom
 
 export const getTransactionsByUsername = async (username: string, assetName: string, page: number): Promise<ResultInteface> => {
     // end-point
-    const URL = `${BASE_URL}/transaction/get-by-username?username=${username}&assetName=${assetName}&page=${page - 1}`;
+    const URL = `${BASE_URL}/transaction/get-by-username?sortBy=state&sortOrder=asc&username=${username}&assetName=${assetName}&page=${page - 1}`;
     // call api
     try {
         const response = await MyRequest(URL);
@@ -55,6 +55,29 @@ export const getTransactionsByUsername = async (username: string, assetName: str
 export const createTransactionForWinner = async (auctionId: number): Promise<User | null> => {
     // end-point
     const URL = `${BASE_URL}/transaction/create-transaction-for-winner/${auctionId}`;
+    try {
+        // call api
+        const response = await fetch(URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            return null;
+        }
+
+        const userWinner = await response.json();
+        return userWinner;
+    } catch (error) {
+        return null;
+    }
+};
+
+export const createTransactionForSeller = async (auctionId: number): Promise<User | null> => {
+    // end-point
+    const URL = `${BASE_URL}/transaction/create-transaction-for-seller/${auctionId}`;
     try {
         // call api
         const response = await fetch(URL, {

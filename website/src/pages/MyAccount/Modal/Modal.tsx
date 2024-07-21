@@ -230,6 +230,20 @@ export const ViewTransactionModal: React.FC<ViewTransactionModalProps> = ({
                       </h4>
 
                       <div className="checkout-form-list my-4 col-md-6">
+                        {
+                          transaction.state === "SUCCEED" && (
+                            <>
+                              <div className="checkout-form-list mb-2">
+                                <label>Mã giao dịch: </label>
+                                <span className="fw-bold"> {transaction.transactionCode}</span>
+                              </div>
+                              <div className="checkout-form-list mb-2">
+                                <label>Mã ngân hàng: </label>
+                                <span className="fw-bold"> {transaction.bankCode}</span>
+                              </div>
+                            </>
+                          )
+                        }
                         <div className="checkout-form-list mb-2">
                           <label> {t("Modal.Loại giao dịch")} </label>
                           <span className="fw-bold">
@@ -1844,7 +1858,6 @@ export const BidConfirmDelete: React.FC<BidConfirmDeleteProps> = ({
   user,
   auction,
 }) => {
-  const navigate = useNavigate();
   return (
     <>
       <button
@@ -1879,16 +1892,21 @@ export const BidConfirmDelete: React.FC<BidConfirmDeleteProps> = ({
               if (user && auction) {
                 await confirmDeleteBid(user?.id, auction?.id, "Rút khỏi đấu giá");
                 if (stompClient && connected) {
+                  const message = {
+                    username: user.username,
+                    auctionId: auction.id,
+                  };
+                  console.log(message);
+                  
                   stompClient.send(
-                    "/app/update-auction",
+                    "/app/kick-out-user",
                     {},
-                    JSON.stringify(auction.id)
+                    JSON.stringify(message)
                   );
                 } else {
                   console.error("WebSocket client is not connected.");
                 }
                 toast.success("Xóa thành công.");
-                navigate("/tai-san-dau-gia/" + auction.id);
               }
             },
             allowOutsideClick: () => !Swal.isLoading(),
